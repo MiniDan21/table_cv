@@ -7,12 +7,19 @@ from config import Config
 
 
 config = Config()
-    
+
 
 def control_pictures():
     if not check_files(files_path=config.IMAGES_DIR):
-        download_unpack(config.LINK_IMAGES_ZIP, path=config.IMAGES_DIR)
+        download_unpack(config.LINK_IMAGES_ZIP, path=Path(config.IMAGES_DIR))
 
+        # Если установится, то распределить файлы по папкам
+        try:
+            for filename_obj in path_array(config.IMAGES_DIR):
+                choose_and_move(filename_obj, Path(config.VIDEOS_DIR), 
+                                Path(config.IMAGES_DIR), Path(config.OTHER_DIR))
+        except Exception as e:
+            print(e)
     result = process_frame(image_files=path_array(config.IMAGES_DIR, string=True))
     return result
 
@@ -49,11 +56,8 @@ def input_google_link():
     download_unpack(config.GOOGLE_DRIVE_LINK.format(id), temp_dir)
     check_temp(temp_dir)
     for filename_obj in path_array(temp_dir):
-        file_type = check_type(filename_obj)
-        if file_type == "video":
-            move_file_to_dir(filename_obj, config.VIDEOS_DIR)
-        elif file_type ==  "image":
-            move_file_to_dir(filename_obj, config.IMAGES_DIR)
+        choose_and_move(filename_obj, Path(config.VIDEOS_DIR), 
+                        Path(config.IMAGES_DIR), Path(config.OTHER_DIR))
 
     delete_file(temp_dir)
     return "Загрузка завершена."

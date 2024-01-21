@@ -10,7 +10,7 @@ def process_frame(image: np.ndarray, config: Config) -> Model:
 
 # заглушка - удалить после тестирования
 def process_frame(*args, **kwargs):
-    pass
+    return True
 
 # Только визуализация модели на одно изображение
 def visualize_frame(image: np.ndarray, 

@@ -28,17 +28,17 @@ def move_file_to_dir(file_path: Path, dir_path: Path) -> bool:
 
 def extract_zip(zip_path, extract_path=None):
     with zipfile.ZipFile(zip_path) as zip_file:
+        try:
+            os.mkdir("TEMP")
+        except Exception:
+            pass
         # Извлекаем все файлы из папок в архиве
         for file in zip_file.namelist():
             file_obj = Path(file)
             if not file_obj.is_dir():
-                try:
-                    os.mkdir("TEMP")
-                except Exception:
-                    pass
                 zip_file.extract(str(file), Path("TEMP"))
                 move_file_to_dir(Path("TEMP", file_obj), extract_path)
-                delete_file("TEMP")
+        delete_file("TEMP")
 
 def _parent(file: Path):
     return file.parent
@@ -51,6 +51,10 @@ def check_type(filename):
         return "video"
     elif ext in images:
         return "image"
+    elif os.path.isdir(filename):
+        return "dir"
+    else:
+        return "other"
     return None
 
 def path_array(dir, string=False):
@@ -91,3 +95,15 @@ def check_temp(temp_path):
     '''Вспомогательная функция, чтобы создать temp, если нет'''
     if not os.path.exists(temp_path):
         os.mkdir(temp_path)
+
+
+def choose_and_move(file_obj: Path, video_dir: Path, image_dir: Path, other_dir: Path):
+    file_type = check_type(file_obj)
+    if file_type == "video":
+        move_file_to_dir(file_obj, video_dir)
+    elif file_type ==  "image":
+        move_file_to_dir(file_obj, image_dir)
+    elif file_type == "dir":
+        delete_file(file_obj)
+    else:
+        move_file_to_dir(file_obj, other_dir)
