@@ -21,12 +21,14 @@ def _check_cell(image: np.ndarray, y1, y2, x1, x2, diff_y=0, diff_x=0) -> np.nda
 # Обработка кадра без визуализация
 def process_frame(image: np.ndarray, config: Config, image_name: str, *args, **kwargs) -> Model:
     # y, x и rgb. Будет использоваться суммирование по осям, поэтому меняем y и x местами
+    # 0.
     max_vertical, max_horizontal, max_channels = image.shape
     model = Model(image_name=image_name, max_width=max_horizontal, max_height=max_vertical)
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # 1.
     thresholded = cv2.threshold(gray, config.thr_white_color_cell, 255, cv2.THRESH_BINARY_INV)[1]
-    
+    # 2.
     low_row = cv2.threshold(gray, config.thr_black_color_cell, 255, cv2.THRESH_BINARY_INV)[1]
     low_sum = low_row.sum(1) / 255
     low_sum[low_sum < config.thr_horizontal * max_horizontal] = 0
@@ -35,6 +37,7 @@ def process_frame(image: np.ndarray, config: Config, image_name: str, *args, **k
     thresholded[low:, :] = low_row[low:, :]
     thresholded = model.add_frame(thresholded)
     
+    # 3.
     # Количество пикселей по горизонтали
     y_sum = thresholded.sum(1) / 255
     y_sum[y_sum < config.thr_horizontal * model.max_width] = 0
@@ -44,9 +47,11 @@ def process_frame(image: np.ndarray, config: Config, image_name: str, *args, **k
     # Число клеток по ВЕРТИКАЛИ
     cells_y = len(diff_y[config.thr_cell_y_min < diff_y])
 
+    # 4.
     # Динамическое обновление высоты линий по вертикали
     config.update_thr_vertical(cells_y - 2, model.max_height)
 
+    # 5.
     # Количество пикселей по вертикали
     x_sum = thresholded.sum(0) / 255
     x_sum[x_sum < config.thr_vertical * model.max_height] = 0
@@ -62,14 +67,17 @@ def process_frame(image: np.ndarray, config: Config, image_name: str, *args, **k
     model.horizontals = list(y)
     model.set_matrix_size(cells_y, cells_x)
 
+    # 6.
     # Рассматриваем попарно вертикали и горизонтали, вырезая тем самым ячейки
     x_slides = np.lib.stride_tricks.sliding_window_view(x, 2)
     y_slides = np.lib.stride_tricks.sliding_window_view(y, 2)
     index = 0
     for y, x in product(y_slides, x_slides):
+        # 7.
         cell = _check_cell(low_row, *y, *x, diff_x=config.thr_cell_x_min, diff_y=config.thr_cell_y_min)
         if cell is not None:
             if cell.any():
+                # 8.
                 label, num = sm.label(cell, return_num=True)
                 digits = []
                 for region in sm.regionprops(label):
