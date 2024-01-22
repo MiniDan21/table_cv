@@ -13,8 +13,10 @@ class Config:
                  thr_cell_y_max: int = 16,
                  thr_cell_x_min: int = 33,
                  scale_to_diff: int = 100,
-                 debug: bool = False,
+                 visualize: bool = False,
                  ):
+        self.visualize = visualize
+
         self.thr_white_color_cell = thr_white_color_cell
         self.thr_black_color_cell = thr_black_color_cell
         # Отношение числа обнаруженных пикселей в ряду(колонне) 
@@ -31,7 +33,6 @@ class Config:
         self.scale_to_diff = scale_to_diff
 
         self.TYPE_OF_SIZE = np.uint16
-        self.DEBUG = debug
 
         self.IMAGES_DIR        = "images"
         self.VIDEOS_DIR        = "videos"
@@ -44,7 +45,7 @@ class Config:
         self.LINK_VIDEOS_ZIP   = ""
     
     # Singleton 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Config, cls).__new__(cls)
 
@@ -52,3 +53,5 @@ class Config:
 
     def update_thr_vertical(self, vertical_cells: int, height: int) -> None:
         self.thr_vertical = vertical_cells * self.thr_cell_y_min / height
+
+config = Config(visualize=False)

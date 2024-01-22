@@ -2,7 +2,9 @@ import os
 import shutil
 from pathlib import Path
 import zipfile
+from typing import List
 
+import openpyxl as xlsx
 import gdown
 
 
@@ -107,3 +109,15 @@ def choose_and_move(file_obj: Path, video_dir: Path, image_dir: Path, other_dir:
         delete_file(file_obj)
     else:
         move_file_to_dir(file_obj, other_dir)
+
+def fill_xlsx_file(matrix: List[List[int | None]], file_name: str = "completed.xlsx", dir_name: str = "completed"):
+    if not check_files(dir_path=dir_name):
+        os.mkdir(dir_name)
+    path = Path(dir_name, file_name)
+    with open(path, "w") as file:
+        workbook = xlsx.Workbook()
+        sheet = workbook.active
+        for row in matrix:
+            sheet.append(row)
+        workbook.save(path)
+    

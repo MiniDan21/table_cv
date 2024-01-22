@@ -3,10 +3,7 @@ from pathlib import Path
 
 from .files_utils import *
 from process import run
-from config import Config
-
-
-config = Config()
+from config import config, Config
 
 
 def control_pictures():
@@ -17,8 +14,13 @@ def control_pictures():
             choose_and_move(filename_obj, Path(config.VIDEOS_DIR), 
                             Path(config.IMAGES_DIR), Path(config.OTHER_DIR))
             
-    result = run(image_files=path_array(config.IMAGES_DIR, string=True))
-    return result
+    results = run(image_files=path_array(config.IMAGES_DIR, string=True))
+    for result in results:
+        filename = str(Path(result.image_name).name)
+        result.update_special_matrix_index()
+        fill_xlsx_file(matrix=result.special_matrix, file_name=filename.split(".")[0] + ".xlsx")
+
+    return "Завершение подпрограммы..."
 
     
 def open_file():
@@ -38,11 +40,11 @@ def open_file():
             result = run(video_file=file_path)
         elif file_type == "image":
             result = run(image_file=file_path)
+        result.update_special_matrix_index()
+        fill_xlsx_file(result.special_matrix, file_name=filename.split(".")[0] + ".xlsx")
+
     else:
         return "Файл не найден в папках videos или images.\nПопробуйте установить специальной командой"
-        
-    if result:
-        return result
     
     return "Завершение подпрограммы..."
 
