@@ -59,10 +59,14 @@ def check_type(filename):
         return "other"
     return None
 
-def path_array(dir, string=False):
+def path_array(dir, string=False, name_only=False):
     files = []
+    file_path = ''
     for file_name in os.listdir(dir):
-        file_path = Path(dir, file_name)
+        if name_only:
+            file_path = Path(file_name)
+        else:
+            file_path = Path(dir, file_name)
         if string:
             file_path = str(file_path)
         files.append(file_path)
@@ -121,3 +125,15 @@ def fill_xlsx_file(matrix: List[List[int | None]], file_name: str = "completed.x
             sheet.append(row)
         workbook.save(path)
     
+def read_xlsx_file(file_name: str = "completed.xlsx", dir_name: str = "other") -> List[int | None]:
+    result = []
+    if not check_files(dir_path=dir_name):
+        os.mkdir(dir_name)
+        return result
+    path = Path(dir_name, file_name)
+    workbook = xlsx.load_workbook(path)
+    sheet = workbook.active
+    for row in sheet.iter_rows(values_only=True):
+        result.append(row)
+    
+    return result

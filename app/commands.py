@@ -2,8 +2,9 @@ import shutil
 from pathlib import Path
 
 from .files_utils import *
+from .test import estimate_metrics
 from process import run
-from config import config, Config
+from config import config
 
 
 def control_pictures():
@@ -17,8 +18,7 @@ def control_pictures():
     results = run(image_files=path_array(config.IMAGES_DIR, string=True))
     for result in results:
         filename = str(Path(result.image_name).name)
-        result.update_special_matrix_index()
-        fill_xlsx_file(matrix=result.special_matrix, file_name=filename.split(".")[0] + ".xlsx")
+        fill_xlsx_file(matrix=result.special_matrix, file_name=filename.split(".")[0] + ".xlsx", dir_name="completed")
 
     return "Завершение подпрограммы..."
 
@@ -40,7 +40,6 @@ def open_file():
             result = run(video_file=file_path)
         elif file_type == "image":
             result = run(image_file=file_path)
-        result.update_special_matrix_index()
         fill_xlsx_file(result.special_matrix, file_name=filename.split(".")[0] + ".xlsx")
 
     else:
@@ -59,7 +58,17 @@ def input_google_link():
                         Path(config.IMAGES_DIR), Path(config.OTHER_DIR))
 
     delete_file(temp_dir)
+    
     return "Загрузка завершена."
+
+def test():
+    test_dataset_images = path_array("images", string=True)[:config.test_slice]
+    test_dataset_answers = map(read_xlsx_file, path_array("other", string=True, name_only=True)[:config.test_slice])
+    predictions = run(image_files=test_dataset_images)
+    
+    estimate_metrics(predictions=predictions, ground_truth=test_dataset_answers)
+    
+    return "Тестирование завершено."
 
 
 def readme():
@@ -73,5 +82,6 @@ commands = {
     "1. Проверить на контрольных изображениях": control_pictures,
     "2. Указать путь к файлу для одиночной проверки": open_file,
     "3. Указать id ZIP-файла на Google Drive для скачивания": input_google_link,
-    "4. Прочитать README": readme,
+    "4. Проверить на тестовой выборке": test,
+    "5. Прочитать README": readme,
 }

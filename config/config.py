@@ -14,8 +14,10 @@ class Config:
                  thr_cell_x_min: int = 33,
                  scale_to_diff: int = 100,
                  visualize: bool = False,
+                 test_slice: int = 9,
                  ):
         self.visualize = visualize
+        self.test_slice = test_slice
 
         self.thr_white_color_cell = thr_white_color_cell
         self.thr_black_color_cell = thr_black_color_cell
